@@ -5,6 +5,8 @@ export default function LAVMarketingPlatform() {
   const [marketData, setMarketData] = useState([]);
   const [competitorAnalyses, setCompetitorAnalyses] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [contentCalendar, setContentCalendar] = useState([]);
+  const [mediaPerformance, setMediaPerformance] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMarketForm, setNewMarketForm] = useState({
     country: 'Türkiye',
@@ -53,6 +55,8 @@ export default function LAVMarketingPlatform() {
       const marketResult = await window.storage.get('lav_market_analyses');
       const competitorAnalysisResult = await window.storage.get('lav_competitor_tracking');
       const recResult = await window.storage.get('lav_recommendations');
+      const contentResult = await window.storage.get('lav_content_calendar');
+      const mediaResult = await window.storage.get('lav_media_performance');
 
       if (marketResult) {
         setMarketData(JSON.parse(marketResult.value));
@@ -62,6 +66,12 @@ export default function LAVMarketingPlatform() {
       }
       if (recResult) {
         setRecommendations(JSON.parse(recResult.value));
+      }
+      if (contentResult) {
+        setContentCalendar(JSON.parse(contentResult.value));
+      }
+      if (mediaResult) {
+        setMediaPerformance(JSON.parse(mediaResult.value));
       }
     } catch (error) {
       console.log('Storage error or first load');
@@ -571,6 +581,14 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
       const updated = recommendations.filter(item => item.id !== id);
       setRecommendations(updated);
       await window.storage.set('lav_recommendations', JSON.stringify(updated));
+    } else if (type === 'content_post') {
+      const updated = contentCalendar.filter(item => item.id !== id);
+      setContentCalendar(updated);
+      await window.storage.set('lav_content_calendar', JSON.stringify(updated));
+    } else if (type === 'media_performance') {
+      const updated = mediaPerformance.filter(item => item.id !== id);
+      setMediaPerformance(updated);
+      await window.storage.set('lav_media_performance', JSON.stringify(updated));
     }
   };
 
@@ -2007,6 +2025,816 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
     </div>
   );
 
+  // Content Management Tab
+  const ContentManagementTab = () => {
+    const [newPost, setNewPost] = useState({
+      platform: 'Instagram',
+      contentType: 'Ürün Gösterimi',
+      title: '',
+      description: '',
+      scheduledDate: '',
+      targetCountry: 'Türkiye',
+      engagementGoal: '',
+      hashtags: '',
+      status: 'Planlandı'
+    });
+
+    const handleSavePost = async () => {
+      if (!newPost.title || !newPost.scheduledDate) {
+        alert('Lütfen başlık ve yayın tarihini doldurun');
+        return;
+      }
+
+      const post = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('tr-TR'),
+        ...newPost
+      };
+
+      const updated = [...contentCalendar, post];
+      setContentCalendar(updated);
+      await window.storage.set('lav_content_calendar', JSON.stringify(updated));
+
+      setNewPost({
+        platform: 'Instagram',
+        contentType: 'Ürün Gösterimi',
+        title: '',
+        description: '',
+        scheduledDate: '',
+        targetCountry: 'Türkiye',
+        engagementGoal: '',
+        hashtags: '',
+        status: 'Planlandı'
+      });
+
+      alert('✓ Post takvime eklendi!');
+    };
+
+    return (
+      <div style={{ padding: '1.5rem', maxWidth: '900px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+          📱 İçerik Yönetimi & Post Takvimi
+        </h2>
+
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+          Sosyal medya içerik takvimi planlama, scheduling ve performance tracking
+        </p>
+
+        {/* Form */}
+        <div style={{
+          background: 'var(--surface-1)',
+          border: '0.5px solid var(--border)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          marginBottom: '2rem'
+        }} onMouseDown={(e) => e.stopPropagation()}>
+          <h3 style={{ fontSize: '14px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+            Yeni Post Ekle
+          </h3>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Platform
+              </label>
+              <select
+                value={newPost.platform}
+                onChange={(e) => setNewPost({ ...newPost, platform: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              >
+                <option>Instagram</option>
+                <option>Facebook</option>
+                <option>TikTok</option>
+                <option>YouTube</option>
+              </select>
+            </div>
+
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                İçerik Türü
+              </label>
+              <select
+                value={newPost.contentType}
+                onChange={(e) => setNewPost({ ...newPost, contentType: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              >
+                <option>Ürün Gösterimi</option>
+                <option>Lifestyle</option>
+                <option>Educational</option>
+                <option>Behind-the-Scenes</option>
+                <option>User-Generated</option>
+                <option>Kampanya</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }} onMouseDown={(e) => e.stopPropagation()}>
+            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+              Post Başlığı *
+            </label>
+            <input
+              type="text"
+              placeholder="Örn: Yaz Koleksiyonu Başladı!"
+              value={newPost.title}
+              onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '0.5px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1rem' }} onMouseDown={(e) => e.stopPropagation()}>
+            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+              Açıklama
+            </label>
+            <textarea
+              placeholder="Post açıklaması, caption, story text..."
+              value={newPost.description}
+              onChange={(e) => setNewPost({ ...newPost, description: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '0.5px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                fontSize: '14px',
+                fontFamily: 'inherit',
+                minHeight: '80px',
+                resize: 'vertical'
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Yayın Tarihi *
+              </label>
+              <input
+                type="date"
+                value={newPost.scheduledDate}
+                onChange={(e) => setNewPost({ ...newPost, scheduledDate: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Hedef Ülke
+              </label>
+              <select
+                value={newPost.targetCountry}
+                onChange={(e) => setNewPost({ ...newPost, targetCountry: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              >
+                <option>Türkiye</option>
+                <option>İtalya</option>
+                <option>İspanya</option>
+                <option>Fransa</option>
+                <option>Amerika</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }} onMouseDown={(e) => e.stopPropagation()}>
+            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+              Hashtag'ler
+            </label>
+            <input
+              type="text"
+              placeholder="#LAV #Cam #Design #StyleLiving"
+              value={newPost.hashtags}
+              onChange={(e) => setNewPost({ ...newPost, hashtags: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '0.5px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1rem' }} onMouseDown={(e) => e.stopPropagation()}>
+            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+              Engagement Hedefi
+            </label>
+            <input
+              type="text"
+              placeholder="Örn: 1000 likes, 500 shares, 100 comments"
+              value={newPost.engagementGoal}
+              onChange={(e) => setNewPost({ ...newPost, engagementGoal: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '0.5px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+
+          <button
+            onClick={handleSavePost}
+            style={{
+              padding: '10px 16px',
+              background: 'var(--fill-accent)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius)',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            📅 Post Takvime Ekle
+          </button>
+        </div>
+
+        {/* Calendar View */}
+        <h3 style={{ fontSize: '14px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+          📆 Planlanmış Postlar ({contentCalendar.length})
+        </h3>
+
+        {contentCalendar.length === 0 ? (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+            Henüz scheduled post yok. Yukarıdan ekleyin!
+          </p>
+        ) : (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {[...contentCalendar].sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate)).map(post => (
+              <div key={post.id} style={{
+                background: 'var(--surface-1)',
+                border: '0.5px solid var(--border)',
+                borderRadius: '12px',
+                padding: '1rem'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                      {post.title}
+                    </span>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', gap: '12px' }}>
+                      <span>📱 {post.platform}</span>
+                      <span>📅 {post.scheduledDate}</span>
+                      <span>{post.targetCountry}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteAnalysis(post.id, 'content_post')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    🗑️
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px', fontSize: '12px' }}>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)' }}>Tür:</span>
+                    <p style={{ color: 'var(--text-primary)', margin: '2px 0 0 0', fontWeight: '500' }}>
+                      {post.contentType}
+                    </p>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)' }}>Engagement Hedefi:</span>
+                    <p style={{ color: 'var(--text-primary)', margin: '2px 0 0 0', fontWeight: '500' }}>
+                      {post.engagementGoal || '-'}
+                    </p>
+                  </div>
+                </div>
+
+                {post.description && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                      {post.description}
+                    </p>
+                  </div>
+                )}
+
+                {post.hashtags && (
+                  <div style={{
+                    fontSize: '12px',
+                    color: 'var(--text-accent)',
+                    padding: '8px 12px',
+                    background: 'var(--surface-0)',
+                    borderRadius: 'var(--radius)',
+                    marginTop: '8px'
+                  }}>
+                    {post.hashtags}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Media Performance Tab
+  const MediaPerformanceTab = () => {
+    const [newCampaign, setNewCampaign] = useState({
+      campaignName: '',
+      platform: 'Instagram',
+      budget: '',
+      spend: '',
+      impressions: '',
+      clicks: '',
+      conversions: '',
+      conversionValue: '',
+      startDate: '',
+      endDate: '',
+      notes: ''
+    });
+
+    const handleSaveCampaign = async () => {
+      if (!newCampaign.campaignName || !newCampaign.budget) {
+        alert('Lütfen kampanya adı ve bütçeyi doldurun');
+        return;
+      }
+
+      const campaign = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('tr-TR'),
+        ...newCampaign,
+        roi: newCampaign.conversionValue && newCampaign.spend ? 
+          (((newCampaign.conversionValue - newCampaign.spend) / newCampaign.spend) * 100).toFixed(2) + '%' : 'Hesaplanmadı',
+        cpe: newCampaign.spend && newCampaign.clicks ? 
+          (newCampaign.spend / newCampaign.clicks).toFixed(2) : 'Hesaplanmadı'
+      };
+
+      const updated = [...mediaPerformance, campaign];
+      setMediaPerformance(updated);
+      await window.storage.set('lav_media_performance', JSON.stringify(updated));
+
+      setNewCampaign({
+        campaignName: '',
+        platform: 'Instagram',
+        budget: '',
+        spend: '',
+        impressions: '',
+        clicks: '',
+        conversions: '',
+        conversionValue: '',
+        startDate: '',
+        endDate: '',
+        notes: ''
+      });
+
+      alert('✓ Kampanya performansı kaydedildi!');
+    };
+
+    return (
+      <div style={{ padding: '1.5rem', maxWidth: '900px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+          💰 Medya Performans & ROI Analizi
+        </h2>
+
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+          Reklam kampaniyalarının bütçe, harcama, ROI ve engagement metrikleri
+        </p>
+
+        {/* Form */}
+        <div style={{
+          background: 'var(--surface-1)',
+          border: '0.5px solid var(--border)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          marginBottom: '2rem'
+        }} onMouseDown={(e) => e.stopPropagation()}>
+          <h3 style={{ fontSize: '14px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+            Yeni Kampanya Performansı Ekle
+          </h3>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Kampanya Adı *
+              </label>
+              <input
+                type="text"
+                placeholder="Örn: Summer Collection 2026"
+                value={newCampaign.campaignName}
+                onChange={(e) => setNewCampaign({ ...newCampaign, campaignName: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Platform
+              </label>
+              <select
+                value={newCampaign.platform}
+                onChange={(e) => setNewCampaign({ ...newCampaign, platform: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              >
+                <option>Instagram</option>
+                <option>Facebook</option>
+                <option>Google Ads</option>
+                <option>TikTok Ads</option>
+                <option>LinkedIn</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Bütçe (EUR) *
+              </label>
+              <input
+                type="number"
+                placeholder="5000"
+                value={newCampaign.budget}
+                onChange={(e) => setNewCampaign({ ...newCampaign, budget: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Gerçek Harcama (EUR)
+              </label>
+              <input
+                type="number"
+                placeholder="4800"
+                value={newCampaign.spend}
+                onChange={(e) => setNewCampaign({ ...newCampaign, spend: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                İzlenim (Impressions)
+              </label>
+              <input
+                type="number"
+                placeholder="250000"
+                value={newCampaign.impressions}
+                onChange={(e) => setNewCampaign({ ...newCampaign, impressions: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Tıklama (Clicks)
+              </label>
+              <input
+                type="number"
+                placeholder="8500"
+                value={newCampaign.clicks}
+                onChange={(e) => setNewCampaign({ ...newCampaign, clicks: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Dönüşüm (Conversions)
+              </label>
+              <input
+                type="number"
+                placeholder="250"
+                value={newCampaign.conversions}
+                onChange={(e) => setNewCampaign({ ...newCampaign, conversions: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Dönüşüm Değeri (EUR)
+              </label>
+              <input
+                type="number"
+                placeholder="15000"
+                value={newCampaign.conversionValue}
+                onChange={(e) => setNewCampaign({ ...newCampaign, conversionValue: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Başlama Tarihi
+              </label>
+              <input
+                type="date"
+                value={newCampaign.startDate}
+                onChange={(e) => setNewCampaign({ ...newCampaign, startDate: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Bitiş Tarihi
+              </label>
+              <input
+                type="date"
+                value={newCampaign.endDate}
+                onChange={(e) => setNewCampaign({ ...newCampaign, endDate: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }} onMouseDown={(e) => e.stopPropagation()}>
+            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+              Notlar
+            </label>
+            <textarea
+              placeholder="Kampanya hakkında notlar, gözlemler, iyileştirme önerileri..."
+              value={newCampaign.notes}
+              onChange={(e) => setNewCampaign({ ...newCampaign, notes: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '0.5px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                fontSize: '14px',
+                fontFamily: 'inherit',
+                minHeight: '70px',
+                resize: 'vertical'
+              }}
+            />
+          </div>
+
+          <button
+            onClick={handleSaveCampaign}
+            style={{
+              padding: '10px 16px',
+              background: 'var(--fill-accent)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius)',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            📊 Kampanya Performansı Kaydet
+          </button>
+        </div>
+
+        {/* Performance Metrics */}
+        <h3 style={{ fontSize: '14px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+          📈 Kampanya Performansları ({mediaPerformance.length})
+        </h3>
+
+        {mediaPerformance.length === 0 ? (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+            Henüz kampanya performansı yok. Yukarıdan ekleyin!
+          </p>
+        ) : (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {[...mediaPerformance].reverse().map(campaign => (
+              <div key={campaign.id} style={{
+                background: 'var(--surface-1)',
+                border: '0.5px solid var(--border)',
+                borderRadius: '12px',
+                padding: '1rem'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                      {campaign.campaignName}
+                    </span>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', gap: '12px' }}>
+                      <span>📱 {campaign.platform}</span>
+                      {campaign.startDate && <span>📅 {campaign.startDate}</span>}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteAnalysis(campaign.id, 'media_performance')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    🗑️
+                  </button>
+                </div>
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                  gap: '12px',
+                  marginBottom: '12px'
+                }}>
+                  <div style={{
+                    background: 'var(--surface-0)',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius)',
+                    border: '0.5px solid var(--border)'
+                  }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>
+                      💶 Bütçe
+                    </p>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)', margin: '0' }}>
+                      €{campaign.budget}
+                    </p>
+                  </div>
+
+                  <div style={{
+                    background: 'var(--surface-0)',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius)',
+                    border: '0.5px solid var(--border)'
+                  }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>
+                      💸 Harcama
+                    </p>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)', margin: '0' }}>
+                      €{campaign.spend}
+                    </p>
+                  </div>
+
+                  <div style={{
+                    background: 'var(--surface-0)',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius)',
+                    border: '0.5px solid var(--border)'
+                  }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>
+                      👁️ İzlenim
+                    </p>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)', margin: '0' }}>
+                      {campaign.impressions || '-'}
+                    </p>
+                  </div>
+
+                  <div style={{
+                    background: 'var(--surface-0)',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius)',
+                    border: '0.5px solid var(--border)'
+                  }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>
+                      🖱️ Tıklamalar
+                    </p>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)', margin: '0' }}>
+                      {campaign.clicks || '-'}
+                    </p>
+                  </div>
+
+                  <div style={{
+                    background: 'var(--surface-0)',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius)',
+                    border: '0.5px solid var(--border)'
+                  }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>
+                      ✅ Dönüşümler
+                    </p>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)', margin: '0' }}>
+                      {campaign.conversions || '-'}
+                    </p>
+                  </div>
+
+                  <div style={{
+                    background: 'var(--bg-success)',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius)',
+                    border: '0.5px solid var(--border-success)'
+                  }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-success)', margin: '0 0 4px 0' }}>
+                      📈 ROI
+                    </p>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-success)', margin: '0' }}>
+                      {campaign.roi}
+                    </p>
+                  </div>
+                </div>
+
+                {campaign.notes && (
+                  <div style={{
+                    padding: '10px 12px',
+                    background: 'var(--surface-0)',
+                    borderRadius: 'var(--radius)',
+                    fontSize: '12px',
+                    color: 'var(--text-secondary)',
+                    lineHeight: '1.6'
+                  }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 4px 0', fontWeight: '500' }}>
+                      📝 Notlar
+                    </p>
+                    {campaign.notes}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Recommendations Tab
   const RecommendationsTab = () => (
     <div style={{ padding: '1.5rem', maxWidth: '900px' }}>
@@ -2262,12 +3090,46 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
         >
           🤖 AI Önerileri
         </button>
+        <button
+          onClick={() => setActiveTab('content')}
+          style={{
+            padding: '12px 16px',
+            background: activeTab === 'content' ? 'var(--surface-2)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'content' ? '2px solid var(--fill-accent)' : 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: activeTab === 'content' ? '500' : '400',
+            color: activeTab === 'content' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          📱 İçerik Yönetimi
+        </button>
+        <button
+          onClick={() => setActiveTab('media')}
+          style={{
+            padding: '12px 16px',
+            background: activeTab === 'media' ? 'var(--surface-2)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'media' ? '2px solid var(--fill-accent)' : 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: activeTab === 'media' ? '500' : '400',
+            color: activeTab === 'media' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          💰 Medya Performans
+        </button>
       </div>
 
       {/* Tab Content */}
       {activeTab === 'market' && <MarketAnalysisTab />}
       {activeTab === 'competitors' && <CompetitorTrackingTab />}
       {activeTab === 'recommendations' && <RecommendationsTab />}
+      {activeTab === 'content' && <ContentManagementTab />}
+      {activeTab === 'media' && <MediaPerformanceTab />}
     </div>
   );
 }
