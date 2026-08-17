@@ -56,6 +56,7 @@ export default function LAVMarketingPlatform() {
       website: 'https://www.lav.com.tr/',
       website2: 'https://company.lav.com.tr/',
       instagram: 'https://www.instagram.com/lavturkiye/',
+      pinterest: 'https://tr.pinterest.com/hayatdolulav',
       country: 'Türkiye',
       isOwnBrand: true
     },
@@ -117,7 +118,83 @@ export default function LAVMarketingPlatform() {
   };
 
   // Memoized handler for form changes - FIX FOR INPUT FOCUS
-  const handleMarketFormChange = useCallback((field, value) => {
+  // Get AI-powered market analysis
+  const handleGetAutoMarketAnalysis = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1200,
+          messages: [
+            {
+              role: "user",
+              content: `Türkiye'deki cam ve bardak endüstrisinin pazar analizi yap. 
+              
+Odaklan:
+1. **Sofra Alışkanlıkları Trendi (2024-2025)**
+   - Türkiye'de sofra kültürü nasıl değişiyor?
+   - Premium vs bütçe bilinç ne durumda?
+   - Aile içi yemek alışkanlıkları artıyor mu?
+
+2. **Ev Dekorasyonu Trendleri**
+   - Modern tasarım vs geleneksel
+   - Ekoloji farkındalığı artmış mı?
+   - Minimal estetik tercih ediliyor mu?
+
+3. **Pazarın Büyüme Potansiyeli**
+   - CAC ve bardak pazarı büyüyor mu?
+   - Hangi segment daha kazançlı? (lüks/massal)
+   - E-commerce vs perakende karşılaştırması
+
+4. **Tüketici Davranışları**
+   - Online shopping tercihli mi?
+   - Sosyal medya etikisi ne kadar?
+   - Fiyat vs kalite hassasiyeti nedir?
+
+5. **Mevsimsel Fırsatlar**
+   - Hangi mevsimde satış yoğun?
+   - Özel günler (düğün, açılış vb) etkisi?
+
+Pratik veriler ve spesifik rakamlar sun. Türkiye pazarına göre tavsiyeler ver.`
+            }
+          ]
+        })
+      });
+
+      const result = await response.json();
+      const content = result.content[0].text;
+
+      const analysis = {
+        id: Date.now(),
+        country: 'Türkiye',
+        marketSize: 'Türkiye Pazar',
+        growthRate: '2024-2025',
+        trends: content.substring(0, 500),
+        opportunities: content,
+        threats: 'Rakip analizi sekmesinde detaylı',
+        date: new Date().toLocaleDateString('tr-TR')
+      };
+
+      const updated = [...marketData, analysis];
+      setMarketData(updated);
+
+      try {
+        await window.storage.set('lav_market_analyses', JSON.stringify(updated));
+      } catch (error) {
+        console.error('Save error:', error);
+      }
+
+      alert('✓ Pazar analizi AI tarafından tamamlandı!');
+    } catch (error) {
+      alert('API hatası: ' + error.message);
+    }
+    setLoading(false);
+  };
     setNewMarketForm(prev => ({
       ...prev,
       [field]: value
@@ -242,6 +319,7 @@ export default function LAVMarketingPlatform() {
     setLoading(true);
     const competitorsList = ['Paşabahçe', 'Luminarc', 'Libbey', 'Bormioli'];
     const newAnalyses = [];
+    let successCount = 0;
 
     for (const competitor of competitorsList) {
       try {
@@ -272,27 +350,43 @@ Kısa, pratik, işletme dili kullan.`
           })
         });
 
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
         const result = await response.json();
+        
+        if (!result.content || !result.content[0]) {
+          throw new Error('Invalid API response format');
+        }
+
         const content = result.content[0].text;
 
         // Parse the response
-        const strengthsMatch = content.match(/GÜÇ:\s*(.+?)(?=ZAAF:|$)/);
-        const weaknessesMatch = content.match(/ZAAF:\s*(.+?)(?=KON:|$)/);
-        const positionMatch = content.match(/KON:\s*(.+?)(?=FİYAT:|$)/);
-        const pricingMatch = content.match(/FİYAT:\s*(.+?)(?=HAM:|$)/);
-        const movesMatch = content.match(/HAM:\s*(.+?)$/);
+        const strengthsMatch = content.match(/GÜÇ:\s*(.+?)(?=ZAAF:|$)/s);
+        const weaknessesMatch = content.match(/ZAAF:\s*(.+?)(?=KON:|$)/s);
+        const positionMatch = content.match(/KON:\s*(.+?)(?=FİYAT:|$)/s);
+        const pricingMatch = content.match(/FİYAT:\s*(.+?)(?=HAM:|$)/s);
+        const movesMatch = content.match(/HAM:\s*(.+?)$/s);
+
+        // Get predefined data if exists
+        const predefinedData = predefinedCompetitors[competitor] || {};
 
         const analysis = {
           id: Date.now() + Math.random(),
           date: new Date().toLocaleDateString('tr-TR'),
           competitor: competitor,
-          country: 'Türkiye',
+          country: predefinedData.country || 'Türkiye',
           strengths: strengthsMatch ? strengthsMatch[1].trim() : content.substring(0, 150),
           weaknesses: weaknessesMatch ? weaknessesMatch[1].trim() : '',
           marketPosition: positionMatch ? positionMatch[1].trim() : '',
           pricingStrategy: pricingMatch ? pricingMatch[1].trim() : '',
           latestMoves: movesMatch ? movesMatch[1].trim() : '',
-          instagram: '',
+          website: predefinedData.website || '',
+          instagram: predefinedData.instagram || '',
+          instagram2: predefinedData.instagram2 || '',
+          pinterest: predefinedData.pinterest || '',
+          linkedin: predefinedData.linkedin || '',
           facebook: '',
           tiktok: '',
           youtube: '',
@@ -311,8 +405,10 @@ Kısa, pratik, işletme dili kullan.`
         };
 
         newAnalyses.push(analysis);
+        successCount++;
+        console.log(`✅ ${competitor} analiz edildi`);
       } catch (error) {
-        console.error(`Error analyzing ${competitor}:`, error);
+        console.error(`❌ ${competitor} analiz hatası:`, error.message);
       }
     }
 
@@ -327,7 +423,14 @@ Kısa, pratik, işletme dili kullan.`
     }
 
     setLoading(false);
-    alert(`✓ Tüm ${newAnalyses.length} rakip analiz edildi ve kaydedildi!`);
+    
+    if (successCount === 0) {
+      alert('⚠️ Hiçbir rakip analiz edilemedi. Lütfen browser console\'ı kontrol et (F12)');
+    } else if (successCount < 4) {
+      alert(`✓ ${successCount}/4 rakip analiz edildi. ${4-successCount} başarısız oldu.`);
+    } else {
+      alert(`✓ Tüm ${successCount} rakip analiz edildi ve kaydedildi!`);
+    }
   };
 
   const handleGetRecommendations = async () => {
@@ -833,7 +936,53 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
         Pazar & Rakip Analizi
       </h2>
 
-      {/* Form */}
+      {/* AI Market Analysis Section */}
+      <div style={{
+        background: 'linear-gradient(135deg, var(--bg-success) 0%, var(--surface-1) 100%)',
+        border: '0.5px solid var(--border-success)',
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '2rem'
+      }}>
+        <h3 style={{
+          fontSize: '13px',
+          fontWeight: '500',
+          color: 'var(--text-success)',
+          margin: '0 0 0.75rem 0'
+        }}>
+          🤖 Türkiye Pazar Analizi (AI Destekli)
+        </h3>
+        <p style={{
+          fontSize: '12px',
+          color: 'var(--text-success)',
+          margin: '0 0 1rem 0'
+        }}>
+          Sofra alışkanlıkları, ev dekorasyonu trendleri ve pazar büyüme potansiyelini analiz et. Veri girişi gerekli değil!
+        </p>
+        <button
+          onClick={handleGetAutoMarketAnalysis}
+          disabled={loading}
+          style={{
+            padding: '10px 16px',
+            background: loading ? 'var(--fill-disabled)' : 'var(--fill-success)',
+            color: 'white',
+            border: 'none',
+            borderRadius: 'var(--radius)',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontSize: '13px',
+            fontWeight: '500'
+          }}
+        >
+          {loading ? '⏳ Analiz yapılıyor...' : '📊 Pazar Analizi Al'}
+        </button>
+        <p style={{
+          fontSize: '11px',
+          color: 'var(--text-success)',
+          margin: '8px 0 0 0'
+        }}>
+          ✓ Sofra alışkanlıkları ✓ Ev dekorasyonu trendleri ✓ Pazar büyüme ✓ Tüketici davranışları
+        </p>
+      </div>
       <div style={{
         background: 'var(--surface-1)',
         border: '0.5px solid var(--border)',
@@ -3704,6 +3853,369 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
     );
   };
 
+  // Reports Tab - PDF Download
+  const ReportsTab = () => {
+    const handleDownloadPDF = () => {
+      // Create report HTML
+      const reportHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>LAV Pazarlama Raporu</title>
+          <style>
+            * { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+            body { padding: 20px; color: #333; line-height: 1.6; }
+            .page-break { page-break-after: always; }
+            h1 { font-size: 28px; margin: 20px 0 10px 0; color: #1a1a1a; border-bottom: 3px solid #007bff; padding-bottom: 10px; }
+            h2 { font-size: 20px; margin: 20px 0 10px 0; color: #0056b3; }
+            h3 { font-size: 16px; margin: 15px 0 8px 0; color: #333; }
+            p { margin: 8px 0; font-size: 13px; }
+            .section { margin: 30px 0; page-break-inside: avoid; }
+            .competitor { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #007bff; }
+            .strength { color: #28a745; font-weight: bold; }
+            .weakness { color: #dc3545; font-weight: bold; }
+            table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            th, td { padding: 10px; border: 1px solid #ddd; text-align: left; font-size: 12px; }
+            th { background: #007bff; color: white; }
+            tr:nth-child(even) { background: #f9f9f9; }
+            .recommendation { background: #e7f3ff; padding: 12px; border-radius: 6px; margin: 10px 0; border-left: 3px solid #0056b3; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .date { color: #666; font-size: 12px; margin-top: 10px; }
+            .summary-box { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107; }
+            ul { margin-left: 20px; font-size: 13px; }
+            li { margin: 5px 0; }
+            @media print {
+              body { padding: 10px; }
+              .page-break { page-break-after: always; }
+              h1 { page-break-after: avoid; }
+            }
+          </style>
+        </head>
+        <body>
+          <!-- Title Page -->
+          <div class="header">
+            <h1>🏢 LAV PAZARLAma RAPoRU</h1>
+            <p style="font-size: 18px; color: #0056b3; margin: 10px 0;">Rakip Analizi & İçerik Stratejisi</p>
+            <p class="date">Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
+          </div>
+
+          <!-- Executive Summary -->
+          <div class="section">
+            <h2>📊 Yönetici Özeti</h2>
+            <div class="summary-box">
+              <p><strong>Analiz Kapsamı:</strong> Türkiye'deki cam ve bardak pazarında LAV'ın pozisyonu</p>
+              <p><strong>Rakipler:</strong> Paşabahçe, Luminarc, Libbey, Bormioli</p>
+              <p><strong>Analiz Tarihi:</strong> ${new Date().toLocaleDateString('tr-TR')}</p>
+              <p><strong>Hedef:</strong> Rakip stratejilerini anlamak, içerik stratejisini optimize etmek ve pazar fırsatlarını belirlemek</p>
+            </div>
+          </div>
+
+          <!-- Market Analysis -->
+          <div class="section">
+            <h2>🎯 Pazar Analizi</h2>
+            ${marketData.length > 0 ? `
+              <h3>Pazar Özeti</h3>
+              <p>${marketData[marketData.length - 1].opportunities ? marketData[marketData.length - 1].opportunities.substring(0, 800) : 'Pazar analizi henüz yapılmamış. Pazar Analizi sekmesinde "Pazar Analizi Al" butonuna tıkla.'}</p>
+            ` : `
+              <p><em>Henüz pazar analizi yapılmamış. Bunu eklemek için Pazar Analizi sekmesini ziyaret et.</em></p>
+            `}
+          </div>
+
+          <!-- Competitor Analysis Summary -->
+          <div class="section">
+            <h2>⚔️ Rakip Analizi Özeti</h2>
+            ${competitorAnalyses.length > 0 ? competitorAnalyses.map((comp, idx) => `
+              <div class="competitor">
+                <h3>${comp.competitor}</h3>
+                <p><strong>Ülke:</strong> ${comp.country}</p>
+                ${comp.website ? `<p><strong>Website:</strong> <a href="${comp.website}" target="_blank">${comp.website}</a></p>` : ''}
+                ${comp.instagram ? `<p><strong>Instagram:</strong> <a href="${comp.instagram}" target="_blank">@${comp.competitor}</a></p>` : ''}
+                <p class="strength">💪 Güçlü Yanları:</p>
+                <p>${comp.strengths || 'Bilgi alınmadı'}</p>
+                <p class="weakness">⚠️ Zayıf Yanları:</p>
+                <p>${comp.weaknesses || 'Bilgi alınmadı'}</p>
+                <p><strong>Pazar Konumu:</strong> ${comp.marketPosition || 'Bilgi alınmadı'}</p>
+              </div>
+            `).join('') : `
+              <p><em>Henüz rakip analizi yapılmamış. Rakip Takip sekmesinde "Tüm Rakipleri Otomatik Analiz Et" butonuna tıkla.</em></p>
+            `}
+          </div>
+
+          <div class="page-break"></div>
+
+          <!-- Content Recommendations -->
+          <div class="section">
+            <h2>💡 İçerik Önerileri</h2>
+            ${recommendations.filter(r => r.type === 'auto_content_calendar').length > 0 ? `
+              <h3>📅 İçerik Takvimi</h3>
+              <p>AI tarafından oluşturulan 4 haftalık optimized content calendar:</p>
+              ${recommendations.filter(r => r.type === 'auto_content_calendar')[0] ? `
+                <div class="recommendation">
+                  <p>${recommendations.filter(r => r.type === 'auto_content_calendar')[0].content.substring(0, 600)}</p>
+                </div>
+              ` : ''}
+            ` : `
+              <p><em>Henüz AI içerik önerileri oluşturulmamış. İçerik Yönetimi sekmesinde "AI Content Calendar Oluştur" butonuna tıkla.</em></p>
+            `}
+
+            ${recommendations.filter(r => r.type === 'media_performance_analysis').length > 0 ? `
+              <h3>📊 Medya Performans Analizi</h3>
+              <div class="recommendation">
+                <p>${recommendations.filter(r => r.type === 'media_performance_analysis')[0].content.substring(0, 400)}</p>
+              </div>
+            ` : ''}
+
+            ${recommendations.filter(r => r.type === 'content_strategy_analysis').length > 0 ? `
+              <h3>📝 İçerik Stratejisi</h3>
+              <div class="recommendation">
+                <p>${recommendations.filter(r => r.type === 'content_strategy_analysis')[0].content.substring(0, 400)}</p>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Key Findings -->
+          <div class="section">
+            <h2>🔍 Temel Bulgular</h2>
+            <ul>
+              <li><strong>Rakip Sayısı:</strong> ${competitorAnalyses.length} racıp analiz edildi</li>
+              <li><strong>İçerik Takvimi:</strong> ${recommendations.filter(r => r.type === 'auto_content_calendar').length > 0 ? '✅ Hazır' : '❌ Oluşturulmadı'}</li>
+              <li><strong>Pazar Analizi:</strong> ${marketData.length > 0 ? '✅ Tamamlandı' : '❌ Henüz yapılmadı'}</li>
+              <li><strong>Medya Performans Analizi:</strong> ${recommendations.filter(r => r.type === 'media_performance_analysis').length > 0 ? '✅ Yapıldı' : '❌ Henüz yapılmadı'}</li>
+            </ul>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="section">
+            <h2>✅ Önerilen Sonraki Adımlar</h2>
+            <ol style="margin-left: 30px;">
+              <li>Rakip analizlerini detaylı olarak gözden geçir ve temel stratejilerini belirle</li>
+              <li>4 haftalık content takvimini sosyal medya platformlarına yükle</li>
+              <li>Medya performans metriklerini haftalık takip et</li>
+              <li>AI önerilerini test et ve sonuçları ölç</li>
+              <li>Her 2 haftada bir raporu güncelle ve ilerlemeleri kontrol et</li>
+            </ol>
+          </div>
+
+          <div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666; font-size: 12px;">
+            <p>Bu rapor LAV Marketing Platform tarafından otomatik olarak oluşturulmuştur.</p>
+            <p>Raporun tamamlanabilmesi için tüm sekmeler ziyaret edilmelidir.</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Create blob and download
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/html;charset=utf-8,' + encodeURIComponent(reportHTML));
+      element.setAttribute('download', `LAV-Pazarlama-Raporu-${new Date().toISOString().split('T')[0]}.html`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+
+      alert('📄 Rapor HTML formatında indirildi. Tarayıcınızda aç ve Print (Ctrl+P) → Save as PDF ile PDF olarak kaydet.');
+    };
+
+    return (
+      <div style={{ padding: '1.5rem', maxWidth: '1000px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+          📄 Pazarlama Raporu
+        </h2>
+
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+          Rakip analizi, pazar görüşü ve AI içerik önerilerinin özet raporu
+        </p>
+
+        {/* Report Summary Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '2rem' }}>
+          <div style={{
+            background: 'var(--surface-1)',
+            border: '0.5px solid var(--border)',
+            borderRadius: '12px',
+            padding: '1rem',
+            textAlign: 'center'
+          }}>
+            <p style={{ fontSize: '28px', margin: '0 0 4px 0' }}>⚔️</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 4px 0' }}>Rakip Analizi</p>
+            <p style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
+              {competitorAnalyses.length}
+            </p>
+          </div>
+
+          <div style={{
+            background: 'var(--surface-1)',
+            border: '0.5px solid var(--border)',
+            borderRadius: '12px',
+            padding: '1rem',
+            textAlign: 'center'
+          }}>
+            <p style={{ fontSize: '28px', margin: '0 0 4px 0' }}>📊</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 4px 0' }}>Pazar Analizi</p>
+            <p style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
+              {marketData.length > 0 ? '✓' : '○'}
+            </p>
+          </div>
+
+          <div style={{
+            background: 'var(--surface-1)',
+            border: '0.5px solid var(--border)',
+            borderRadius: '12px',
+            padding: '1rem',
+            textAlign: 'center'
+          }}>
+            <p style={{ fontSize: '28px', margin: '0 0 4px 0' }}>💡</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 4px 0' }}>AI Önerileri</p>
+            <p style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
+              {recommendations.length}
+            </p>
+          </div>
+        </div>
+
+        {/* Download Button */}
+        <div style={{
+          background: 'linear-gradient(135deg, var(--bg-accent) 0%, var(--surface-1) 100%)',
+          border: '0.5px solid var(--border-accent)',
+          borderRadius: '12px',
+          padding: '1.5rem',
+          marginBottom: '2rem',
+          textAlign: 'center'
+        }}>
+          <h3 style={{
+            fontSize: '14px',
+            fontWeight: '500',
+            color: 'var(--text-accent)',
+            margin: '0 0 1rem 0'
+          }}>
+            📥 Raporu İndir
+          </h3>
+          <button
+            onClick={handleDownloadPDF}
+            style={{
+              padding: '12px 24px',
+              background: 'var(--fill-accent)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius)',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              marginBottom: '1rem'
+            }}
+          >
+            📄 Raporu İndir (HTML)
+          </button>
+          <p style={{ fontSize: '12px', color: 'var(--text-accent)', margin: 0 }}>
+            ✓ HTML dosyası indirilecek. Tarayıcıda aç → Print (Ctrl+P) → "Save as PDF" ile PDF olarak kaydet
+          </p>
+        </div>
+
+        {/* Report Contents */}
+        <div style={{
+          background: 'var(--surface-1)',
+          border: '0.5px solid var(--border)',
+          borderRadius: '12px',
+          padding: '1.5rem'
+        }}>
+          <h3 style={{
+            fontSize: '14px',
+            fontWeight: '500',
+            marginBottom: '1rem',
+            color: 'var(--text-primary)'
+          }}>
+            📋 Rapor İçeriği
+          </h3>
+
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <div style={{
+              padding: '12px',
+              background: 'var(--surface-0)',
+              borderRadius: '8px',
+              borderLeft: '3px solid var(--fill-accent)'
+            }}>
+              <p style={{ fontSize: '13px', fontWeight: '500', margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
+                ✅ Yönetici Özeti
+              </p>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+                Rapor genel özeti ve analiz kapsamı
+              </p>
+            </div>
+
+            <div style={{
+              padding: '12px',
+              background: 'var(--surface-0)',
+              borderRadius: '8px',
+              borderLeft: '3px solid var(--fill-success)'
+            }}>
+              <p style={{ fontSize: '13px', fontWeight: '500', margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
+                ✅ Pazar Analizi
+              </p>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+                Türkiye'deki pazar trendleri ve büyüme potansiyeli
+              </p>
+            </div>
+
+            <div style={{
+              padding: '12px',
+              background: 'var(--surface-0)',
+              borderRadius: '8px',
+              borderLeft: '3px solid var(--fill-warning)'
+            }}>
+              <p style={{ fontSize: '13px', fontWeight: '500', margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
+                ✅ Rakip Analizi
+              </p>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+                {competitorAnalyses.length > 0 ? `${competitorAnalyses.length} rakibin güçlü/zayıf yanları ve stratejileri` : 'Henüz yapılmadı'}
+              </p>
+            </div>
+
+            <div style={{
+              padding: '12px',
+              background: 'var(--surface-0)',
+              borderRadius: '8px',
+              borderLeft: '3px solid var(--fill-accent)'
+            }}>
+              <p style={{ fontSize: '13px', fontWeight: '500', margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
+                ✅ İçerik Önerileri
+              </p>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+                AI tarafından oluşturulan content calendar ve stratejiler
+              </p>
+            </div>
+
+            <div style={{
+              padding: '12px',
+              background: 'var(--surface-0)',
+              borderRadius: '8px',
+              borderLeft: '3px solid var(--fill-success)'
+            }}>
+              <p style={{ fontSize: '13px', fontWeight: '500', margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
+                ✅ Sonraki Adımlar
+              </p>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+                Önerilen eylem planı ve ölçüm metrikleri
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Info Box */}
+        <div style={{
+          background: 'var(--bg-accent)',
+          border: '0.5px solid var(--border-accent)',
+          borderRadius: '12px',
+          padding: '1rem',
+          marginTop: '2rem'
+        }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-accent)', margin: 0 }}>
+            <strong>💡 Not:</strong> Rapor tamamlanabilmesi için tüm sekmeler ziyaret edilmelidir. 
+            (Pazar Analizi, Rakip Takip, İçerik Yönetimi, Medya Performans)
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   // Recommendations Tab
   const RecommendationsTab = () => (
     <div style={{ padding: '1.5rem', maxWidth: '900px' }}>
@@ -4027,6 +4539,22 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
         >
           🏢 LAV Profili
         </button>
+        <button
+          onClick={() => setActiveTab('reports')}
+          style={{
+            padding: '12px 16px',
+            background: activeTab === 'reports' ? 'var(--surface-2)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'reports' ? '2px solid var(--fill-accent)' : 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: activeTab === 'reports' ? '500' : '400',
+            color: activeTab === 'reports' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          📄 Raporlar
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -4036,6 +4564,7 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
       {activeTab === 'content' && <ContentManagementTab />}
       {activeTab === 'media' && <MediaPerformanceTab />}
       {activeTab === 'lavprofile' && <LAVProfileTab />}
+      {activeTab === 'reports' && <ReportsTab />}
     </div>
   );
 }
