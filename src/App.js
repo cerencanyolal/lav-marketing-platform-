@@ -701,6 +701,9 @@ Seasonal trends'i göz önüne al.`
     }
     setLoading(false);
   };
+
+  // Get content strategy analysis
+  const handleGetContentStrategyAnalysis = async () => {
     setLoading(true);
     try {
       const contentStrategyData = competitorAnalyses.map(c => ({
