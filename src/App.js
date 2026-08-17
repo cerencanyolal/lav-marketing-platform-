@@ -195,6 +195,8 @@ Pratik veriler ve spesifik rakamlar sun. Türkiye pazarına göre tavsiyeler ver
     }
     setLoading(false);
   };
+
+  const handleMarketFormChange = useCallback((field, value) => {
     setNewMarketForm(prev => ({
       ...prev,
       [field]: value
