@@ -469,7 +469,178 @@ Pratik ve işletmeye odaklı öner.`
     setLoading(false);
   };
 
-  const handleGetContentStrategyAnalysis = async () => {
+  // Get media performance analysis
+  const handleGetMediaPerformanceAnalysis = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1500,
+          messages: [
+            {
+              role: "user",
+              content: `LAV'ın medya kampanyaları için detaylı performans analizi ve iyileştirme önerileri yap.
+
+Mevcut Kampanyalar:
+${mediaPerformance.map(c => `
+${c.campaignName} (${c.platform}):
+- Bütçe: €${c.budget}
+- Harcama: €${c.spend}
+- ROI: ${c.roi}
+- İzlenim: ${c.impressions || 'Veri yok'}
+- Tıklama: ${c.clicks || 'Veri yok'}
+- Dönüşüm: ${c.conversions || 'Veri yok'}
+- Dönüşüm Değeri: €${c.conversionValue || 'Veri yok'}
+- Notlar: ${c.notes || 'Veri yok'}
+`).join('')}
+
+Lütfen şunları analiz et:
+
+1. **Kampanya Performans Özeti**
+   - Hangi kampanya en başarılı?
+   - Hangi platform en iyi ROI sağlıyor?
+   - Genel bütçe verimliliği nasıl?
+
+2. **ROI Analizi**
+   - Kampanyalar arası ROI karşılaştırması
+   - Üstün performans gösteren kampanya neden başarılı?
+   - Düşük performans gösteren kampanya neden sorunlu?
+
+3. **Bütçe Optimizasyonu**
+   - Bütçe dağılımı nereye kaydırılmalı?
+   - Hangi platform'a daha fazla yatırım yapılmalı?
+   - Hangi platform'dan para kesebiliriz?
+
+4. **Harcama Verimliliği**
+   - Cost Per Click (CPC) analizi
+   - Cost Per Conversion (CPA) analizi
+   - Hangi kanal daha verimli?
+
+5. **Dönüşüm Stratejisi**
+   - Dönüşüm oranı nasıl iyileştirilebilir?
+   - Hangi taktikler önerilir?
+   - A/B testing önerileri?
+
+6. **Hızlı Kazançlar (Quick Wins)**
+   - 1-2 hafta içinde uygulanabilir iyileştirmeler
+   - Minimum risk, maksimum ROI
+   - Test edilebilecek spesifik taktikler
+
+7. **30 Günlük Aksiyon Planı**
+   - Haftalık milestone'lar
+   - Test edilecek hipotezler
+   - Beklenen sonuçlar
+
+Her bölümde pratik, sayılarla desteklenmiş öneriler sun.`
+            }
+          ]
+        })
+      });
+
+      const result = await response.json();
+      const content = result.content[0].text;
+
+      const rec = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('tr-TR'),
+        type: 'media_performance_analysis',
+        content: content,
+        status: 'pending'
+      };
+
+      const updated = [...recommendations, rec];
+      setRecommendations(updated);
+
+      try {
+        await window.storage.set('lav_recommendations', JSON.stringify(updated));
+      } catch (error) {
+        console.error('Save error:', error);
+      }
+
+      alert('✓ Medya performans analizi önerileri oluşturuldu!');
+    } catch (error) {
+      alert('API hatası: ' + error.message);
+    }
+    setLoading(false);
+  };
+
+  const handleGetAutoContentCalendar = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1200,
+          messages: [
+            {
+              role: "user",
+              content: `LAV cam/bardak ürünleri için 4 haftalık optimized sosyal medya content calendar oluştur.
+
+Pazarlar: Türkiye (ana), İtalya, İspanya, Fransa, Amerika
+Rakip Analizleri: Paşabahçe (premium), Luminarc (casual), Libbey (educational), Bormioli (luxury)
+
+Lütfen şu formatı kullan (her post için):
+
+POST [1-16]:
+Platform: Instagram/Facebook/TikTok/YouTube
+Tür: [İçerik Türü]
+Başlık: [Post Başlığı]
+Açıklama: [2-3 cümle caption]
+Hashtag: [Relevant hashtags]
+Hedef Ülke: [Ülke]
+Engagement Hedefi: [Beklenen engagement]
+Scheduling: [Günü] [Saati] UTC
+
+4 haftanın stratejisi:
+
+HAFTA 1: Awareness & Reach
+HAFTA 2: Engagement & Community
+HAFTA 3: Conversion & Sales
+HAFTA 4: Retention & Loyalty
+
+Rakip analizi ile gap'ları kapatacak içerik öner.
+Her post'un neden o hafta'ya uygun olduğunu kısaca açıkla.
+Seasonal trends'i göz önüne al.`
+            }
+          ]
+        })
+      });
+
+      const result = await response.json();
+      const content = result.content[0].text;
+
+      const rec = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('tr-TR'),
+        type: 'auto_content_calendar',
+        content: content,
+        status: 'pending'
+      };
+
+      const updated = [...recommendations, rec];
+      setRecommendations(updated);
+
+      try {
+        await window.storage.set('lav_recommendations', JSON.stringify(updated));
+      } catch (error) {
+        console.error('Save error:', error);
+      }
+
+      alert('✓ AI-destekli 4 haftalık content calendar oluşturuldu!');
+    } catch (error) {
+      alert('API hatası: ' + error.message);
+    }
+    setLoading(false);
+  };
     setLoading(true);
     try {
       const contentStrategyData = competitorAnalyses.map(c => ({
@@ -2360,6 +2531,54 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
             ))}
           </div>
         )}
+
+        {/* Auto Content Calendar Section */}
+        <div style={{
+          background: 'var(--bg-success)',
+          border: '0.5px solid var(--border-success)',
+          borderRadius: '12px',
+          padding: '1rem',
+          marginBottom: '2rem'
+        }}>
+          <h3 style={{
+            fontSize: '13px',
+            fontWeight: '500',
+            color: 'var(--text-success)',
+            margin: '0 0 0.75rem 0'
+          }}>
+            🤖 AI-Destekli 4 Haftalık Content Calendar
+          </h3>
+          <p style={{
+            fontSize: '12px',
+            color: 'var(--text-success)',
+            margin: '0 0 1rem 0'
+          }}>
+            Rakip analizi ve pazar stratejisine göre optimized 4 haftalık post takvimi oluştur. Manuel giriş gerektmez!
+          </p>
+          <button
+            onClick={handleGetAutoContentCalendar}
+            disabled={loading || competitorAnalyses.length === 0}
+            style={{
+              padding: '10px 16px',
+              background: loading || competitorAnalyses.length === 0 ? 'var(--fill-disabled)' : 'var(--fill-success)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius)',
+              cursor: loading || competitorAnalyses.length === 0 ? 'not-allowed' : 'pointer',
+              fontSize: '13px',
+              fontWeight: '500'
+            }}
+          >
+            {loading ? '⏳ Calendar oluşturuluyor...' : '🗓️ 4 Haftalık AI Content Calendar Oluştur'}
+          </button>
+          <p style={{
+            fontSize: '11px',
+            color: 'var(--text-success)',
+            margin: '8px 0 0 0'
+          }}>
+            📝 Önerilen calendar AI Önerileri sekmesinde görüntülenir
+          </p>
+        </div>
       </div>
     );
   };
@@ -2831,6 +3050,56 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
             ))}
           </div>
         )}
+
+        {/* Media Performance AI Analysis Section */}
+        {mediaPerformance.length > 0 && (
+          <div style={{
+            background: 'var(--bg-accent)',
+            border: '0.5px solid var(--border-accent)',
+            borderRadius: '12px',
+            padding: '1rem',
+            marginBottom: '2rem'
+          }}>
+            <h3 style={{
+              fontSize: '13px',
+              fontWeight: '500',
+              color: 'var(--text-accent)',
+              margin: '0 0 0.75rem 0'
+            }}>
+              🤖 AI Medya Performans Analizi
+            </h3>
+            <p style={{
+              fontSize: '12px',
+              color: 'var(--text-accent)',
+              margin: '0 0 1rem 0'
+            }}>
+              Kampanya performansını analiz et, ROI iyileştirme önerileri ve optimizasyon stratejileri al.
+            </p>
+            <button
+              onClick={handleGetMediaPerformanceAnalysis}
+              disabled={loading}
+              style={{
+                padding: '10px 16px',
+                background: loading ? 'var(--fill-disabled)' : 'var(--fill-accent)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 'var(--radius)',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontSize: '13px',
+                fontWeight: '500'
+              }}
+            >
+              {loading ? '⏳ Analiz yapılıyor...' : '📊 Performans Analizi Al'}
+            </button>
+            <p style={{
+              fontSize: '11px',
+              color: 'var(--text-accent)',
+              margin: '8px 0 0 0'
+            }}>
+              💡 Detaylı analiz ve öneriler AI Önerileri sekmesinde görüntülenir
+            </p>
+          </div>
+        )}
       </div>
     );
   };
@@ -2939,6 +3208,26 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
                         borderRadius: 'var(--radius)'
                       }}>
                         📝 Content Strategy
+                      </span>
+                    ) : rec.type === 'media_performance_analysis' ? (
+                      <span style={{
+                        fontSize: '11px',
+                        background: 'var(--bg-warning)',
+                        color: 'var(--text-warning)',
+                        padding: '3px 8px',
+                        borderRadius: 'var(--radius)'
+                      }}>
+                        💰 Medya Performans
+                      </span>
+                    ) : rec.type === 'auto_content_calendar' ? (
+                      <span style={{
+                        fontSize: '11px',
+                        background: 'var(--bg-success)',
+                        color: 'var(--text-success)',
+                        padding: '3px 8px',
+                        borderRadius: 'var(--radius)'
+                      }}>
+                        🗓️ AI Content Calendar
                       </span>
                     ) : (
                       <span style={{
