@@ -39,11 +39,49 @@ export default function LAVMarketingPlatform() {
     hashtagStrategy: '',
     engagementTactics: '',
     campaignTypes: '',
-    uGCStrategy: ''
+    uGCStrategy: '',
+    website: '',
+    instagram2: '',
+    instagram2Followers: '',
+    pinterest: '',
+    linkedin: ''
   });
 
   const competitors = ['Paşabahçe', 'Luminarc', 'Libbey', 'Bormioli'];
   const countries = ['Türkiye', 'İtalya', 'İspanya', 'Fransa', 'Amerika'];
+
+  // Predefined competitor data with correct URLs
+  const predefinedCompetitors = {
+    'LAV': {
+      website: 'https://www.lav.com.tr/',
+      website2: 'https://company.lav.com.tr/',
+      instagram: 'https://www.instagram.com/lavturkiye/',
+      country: 'Türkiye',
+      isOwnBrand: true
+    },
+    'Paşabahçe': {
+      website: 'https://www.pasabahce.com/',
+      instagram: 'https://www.instagram.com/pasabahce',
+      instagram2: 'https://www.instagram.com/pasabahcemagazalari',
+      pinterest: 'https://tr.pinterest.com/pasabahce_/',
+      country: 'Türkiye'
+    },
+    'Luminarc': {
+      website: 'https://www.latabledarc.com/',
+      instagram: 'https://www.instagram.com/luminarc',
+      country: 'Fransa'
+    },
+    'Libbey': {
+      website: 'https://www.libbey.com/',
+      instagram: 'https://www.instagram.com/libbey/',
+      country: 'Amerika'
+    },
+    'Bormioli': {
+      website: 'https://shop.bormiolirocco.com/en',
+      instagram: 'https://www.instagram.com/bormioliroccoit/',
+      country: 'İtalya'
+    }
+  };
 
   // Load data from persistent storage
   useEffect(() => {
@@ -92,6 +130,23 @@ export default function LAVMarketingPlatform() {
       [field]: value
     }));
   }, []);
+
+  const handleLoadPredefinedCompetitor = (competitorName) => {
+    const data = predefinedCompetitors[competitorName];
+    if (data) {
+      setNewCompetitorForm(prev => ({
+        ...prev,
+        competitor: competitorName,
+        country: data.country || prev.country,
+        website: data.website || '',
+        instagram: data.instagram || '',
+        instagram2: data.instagram2 || '',
+        pinterest: data.pinterest || '',
+        linkedin: data.linkedin || ''
+      }));
+      alert(`✓ ${competitorName}'nin sosyal medya ve website bilgileri yüklendi!`);
+    }
+  };
 
   // Save market analysis
   const handleSaveMarketAnalysis = async () => {
@@ -171,7 +226,12 @@ export default function LAVMarketingPlatform() {
       hashtagStrategy: '',
       engagementTactics: '',
       campaignTypes: '',
-      uGCStrategy: ''
+      uGCStrategy: '',
+      website: '',
+      instagram2: '',
+      instagram2Followers: '',
+      pinterest: '',
+      linkedin: ''
     });
 
     alert('✓ Rakip analizi kaydedildi!');
@@ -1053,7 +1113,41 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
           Yeni Rakip Analizi Ekle
         </h3>
 
-        {/* Row 1: Competitor & Country - FIXED */}
+        {/* Quick Load Predefined Competitors */}
+        <div style={{
+          background: 'var(--surface-0)',
+          border: '0.5px solid var(--border)',
+          borderRadius: '12px',
+          padding: '1rem',
+          marginBottom: '1.5rem'
+        }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0', fontWeight: '500' }}>
+            🚀 Önceden Tanımlanmış Rakipleri Yükle (Web + Instagram otomatik):
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            {competitors.map(c => (
+              <button
+                key={c}
+                onClick={() => handleLoadPredefinedCompetitor(c)}
+                style={{
+                  padding: '8px 12px',
+                  background: 'var(--fill-accent)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '500'
+                }}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0 0 0' }}>
+            Rakip seç → Website + Instagram hesapları otomatik doldurulacak
+          </p>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
           <div onMouseDown={(e) => e.stopPropagation()}>
             <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
@@ -1201,6 +1295,26 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
           />
         </div>
 
+        {/* Website & Main Links */}
+        <div style={{ marginBottom: '1rem' }} onMouseDown={(e) => e.stopPropagation()}>
+          <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+            🌐 Website
+          </label>
+          <input
+            type="url"
+            placeholder="https://www.example.com"
+            value={newCompetitorForm.website || ''}
+            onChange={(e) => handleCompetitorFormChange('website', e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '0.5px solid var(--border)',
+              borderRadius: 'var(--radius)',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+
         {/* Social Media Section - FIXED */}
         <div style={{
           background: 'var(--surface-0)',
@@ -1216,11 +1330,11 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
             <div>
               <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
-                📸 Instagram Hesabı
+                📸 Instagram Hesabı (1)
               </label>
               <input
                 type="text"
-                placeholder="@pasbahce.glass"
+                placeholder="https://www.instagram.com/pasabahce"
                 value={newCompetitorForm.instagram}
                 onChange={(e) => handleCompetitorFormChange('instagram', e.target.value)}
                 style={{
@@ -1253,6 +1367,47 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
             </div>
           </div>
 
+          {/* Instagram 2 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div>
+              <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                📸 Instagram Hesabı (2) - İkincil
+              </label>
+              <input
+                type="text"
+                placeholder="https://www.instagram.com/pasabahcemagazalari"
+                value={newCompetitorForm.instagram2 || ''}
+                onChange={(e) => handleCompetitorFormChange('instagram2', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '13px'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Takipçi Sayısı
+              </label>
+              <input
+                type="text"
+                placeholder="50K"
+                value={newCompetitorForm.instagram2Followers || ''}
+                onChange={(e) => handleCompetitorFormChange('instagram2Followers', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '13px'
+                }}
+              />
+            </div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
             <div>
               <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
@@ -1260,7 +1415,7 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
               </label>
               <input
                 type="text"
-                placeholder="Pasbahce.com"
+                placeholder="https://www.facebook.com/pasabahce"
                 value={newCompetitorForm.facebook}
                 onChange={(e) => handleCompetitorFormChange('facebook', e.target.value)}
                 style={{
@@ -1300,7 +1455,7 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
               </label>
               <input
                 type="text"
-                placeholder="@pasbahce"
+                placeholder="https://www.tiktok.com/@pasbahce"
                 value={newCompetitorForm.tiktok}
                 onChange={(e) => handleCompetitorFormChange('tiktok', e.target.value)}
                 style={{
@@ -1340,7 +1495,7 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
               </label>
               <input
                 type="text"
-                placeholder="Pasbahce Glass"
+                placeholder="https://www.youtube.com/@Pasabahce"
                 value={newCompetitorForm.youtube}
                 onChange={(e) => handleCompetitorFormChange('youtube', e.target.value)}
                 style={{
@@ -1362,6 +1517,47 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
                 placeholder="30K"
                 value={newCompetitorForm.youtubeFollowers}
                 onChange={(e) => handleCompetitorFormChange('youtubeFollowers', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '13px'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Pinterest & LinkedIn */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div>
+              <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                📌 Pinterest
+              </label>
+              <input
+                type="text"
+                placeholder="https://tr.pinterest.com/pasabahce_/"
+                value={newCompetitorForm.pinterest || ''}
+                onChange={(e) => handleCompetitorFormChange('pinterest', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '0.5px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '13px'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                💼 LinkedIn
+              </label>
+              <input
+                type="text"
+                placeholder="https://www.linkedin.com/company/pasabahce"
+                value={newCompetitorForm.linkedin || ''}
+                onChange={(e) => handleCompetitorFormChange('linkedin', e.target.value)}
                 style={{
                   width: '100%',
                   padding: '8px 12px',
@@ -2193,6 +2389,407 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
           ))}
         </div>
       )}
+    </div>
+  );
+
+  // LAV Profile Tab
+  const LAVProfileTab = () => (
+    <div style={{ padding: '1.5rem', maxWidth: '900px' }}>
+      <h2 style={{ fontSize: '18px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+        🏢 LAV Profili & Sosyal Medya
+      </h2>
+
+      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+        LAV'ın resmi web sitesi ve sosyal medya hesapları
+      </p>
+
+      {/* LAV Profile Card */}
+      <div style={{
+        background: 'linear-gradient(135deg, var(--bg-accent) 0%, var(--surface-1) 100%)',
+        border: '2px solid var(--border-accent)',
+        borderRadius: '12px',
+        padding: '2rem',
+        marginBottom: '2rem'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1.5rem' }}>
+          <div>
+            <h3 style={{ fontSize: '22px', fontWeight: '600', color: 'var(--text-primary)', margin: '0 0 0.5rem 0' }}>
+              🏢 LAV Brands
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0' }}>
+              Cam ve Bardak Ürünleri Öncüsü
+            </p>
+          </div>
+          <span style={{
+            fontSize: '48px',
+            opacity: 0.3
+          }}>
+            🏭
+          </span>
+        </div>
+
+        {/* Websites */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h4 style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-accent)', margin: '0 0 0.75rem 0' }}>
+            🌐 Web Siteleri
+          </h4>
+          <div style={{ display: 'grid', gap: '10px' }}>
+            <a 
+              href="https://www.lav.com.tr/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--surface-2)',
+                border: '0.5px solid var(--border)',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: 'var(--text-accent)',
+                fontSize: '13px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'var(--surface-1)'}
+              onMouseLeave={(e) => e.target.style.background = 'var(--surface-2)'}
+            >
+              🔗 https://www.lav.com.tr/
+              <span style={{ marginLeft: 'auto', fontSize: '16px' }}>↗️</span>
+            </a>
+
+            <a 
+              href="https://company.lav.com.tr/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--surface-2)',
+                border: '0.5px solid var(--border)',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: 'var(--text-accent)',
+                fontSize: '13px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'var(--surface-1)'}
+              onMouseLeave={(e) => e.target.style.background = 'var(--surface-2)'}
+            >
+              🔗 https://company.lav.com.tr/ (Kurumsal)
+              <span style={{ marginLeft: 'auto', fontSize: '16px' }}>↗️</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Instagram */}
+        <div>
+          <h4 style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-accent)', margin: '0 0 0.75rem 0' }}>
+            📸 Instagram
+          </h4>
+          <a 
+            href="https://www.instagram.com/lavturkiye/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              padding: '12px 16px',
+              background: 'var(--surface-2)',
+              border: '0.5px solid var(--border)',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              color: 'var(--text-accent)',
+              fontSize: '13px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.target.style.background = 'var(--surface-1)'}
+            onMouseLeave={(e) => e.target.style.background = 'var(--surface-2)'}
+          >
+            📱 @lavturkiye
+            <span style={{ marginLeft: 'auto', fontSize: '16px' }}>↗️</span>
+          </a>
+        </div>
+      </div>
+
+      {/* Rakip Karşılaştırması */}
+      <h3 style={{ fontSize: '14px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+        📊 Rakip Karşılaştırması - Web & Sosyal Medya Varlığı
+      </h3>
+
+      <div style={{
+        background: 'var(--surface-1)',
+        border: '0.5px solid var(--border)',
+        borderRadius: '12px',
+        padding: '1rem',
+        overflowX: 'auto'
+      }}>
+        <table style={{
+          width: '100%',
+          fontSize: '12px',
+          borderCollapse: 'collapse',
+          minWidth: '700px'
+        }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--border)' }}>
+              <th style={{
+                padding: '10px',
+                textAlign: 'left',
+                fontWeight: '500',
+                color: 'var(--text-primary)',
+                background: 'var(--surface-0)'
+              }}>
+                Marka
+              </th>
+              <th style={{
+                padding: '10px',
+                textAlign: 'left',
+                fontWeight: '500',
+                color: 'var(--text-primary)',
+                background: 'var(--surface-0)'
+              }}>
+                🌐 Website
+              </th>
+              <th style={{
+                padding: '10px',
+                textAlign: 'left',
+                fontWeight: '500',
+                color: 'var(--text-primary)',
+                background: 'var(--surface-0)'
+              }}>
+                📸 Instagram
+              </th>
+              <th style={{
+                padding: '10px',
+                textAlign: 'left',
+                fontWeight: '500',
+                color: 'var(--text-primary)',
+                background: 'var(--surface-0)'
+              }}>
+                📌 Pinterest
+              </th>
+              <th style={{
+                padding: '10px',
+                textAlign: 'left',
+                fontWeight: '500',
+                color: 'var(--text-primary)',
+                background: 'var(--surface-0)'
+              }}>
+                Ülke
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* LAV */}
+            <tr style={{ borderBottom: '0.5px solid var(--border)', background: 'var(--bg-accent)' }}>
+              <td style={{ padding: '10px', fontWeight: '500', color: 'var(--text-accent)' }}>
+                🏢 LAV (Bizim)
+              </td>
+              <td style={{ padding: '10px', color: 'var(--text-accent)' }}>
+                ✅ 2 site
+              </td>
+              <td style={{ padding: '10px', color: 'var(--text-accent)' }}>
+                ✅ Aktif
+              </td>
+              <td style={{ padding: '10px', color: 'var(--text-secondary)' }}>
+                ❌ Yok
+              </td>
+              <td style={{ padding: '10px', color: 'var(--text-accent)' }}>
+                Türkiye
+              </td>
+            </tr>
+
+            {/* Rakipler */}
+            {[
+              { name: 'Paşabahçe', website: '✅', instagram: '✅✅', pinterest: '✅', country: 'Türkiye' },
+              { name: 'Luminarc', website: '✅', instagram: '✅', pinterest: '?', country: 'Fransa' },
+              { name: 'Libbey', website: '✅', instagram: '✅', pinterest: '?', country: 'Amerika' },
+              { name: 'Bormioli', website: '✅', instagram: '✅', pinterest: '?', country: 'İtalya' }
+            ].map((competitor, idx) => (
+              <tr key={competitor.name} style={{
+                borderBottom: '0.5px solid var(--border)',
+                background: idx % 2 === 0 ? 'transparent' : 'var(--surface-0)'
+              }}>
+                <td style={{ padding: '10px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                  🏢 {competitor.name}
+                </td>
+                <td style={{ padding: '10px', color: 'var(--text-secondary)' }}>
+                  {competitor.website}
+                </td>
+                <td style={{ padding: '10px', color: 'var(--text-secondary)' }}>
+                  {competitor.instagram}
+                </td>
+                <td style={{ padding: '10px', color: 'var(--text-secondary)' }}>
+                  {competitor.pinterest}
+                </td>
+                <td style={{ padding: '10px', color: 'var(--text-secondary)' }}>
+                  {competitor.country}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Gözlemler */}
+      <div style={{
+        background: 'var(--surface-1)',
+        border: '0.5px solid var(--border)',
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginTop: '2rem'
+      }}>
+        <h3 style={{ fontSize: '13px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+          💡 Gözlemler & Öneriler
+        </h3>
+
+        <div style={{ display: 'grid', gap: '12px', fontSize: '13px' }}>
+          <div style={{
+            padding: '12px',
+            background: 'var(--bg-accent)',
+            borderRadius: 'var(--radius)',
+            color: 'var(--text-accent)'
+          }}>
+            <p style={{ margin: '0 0 4px 0', fontWeight: '500' }}>
+              ✅ LAV'ın Güçlü Yanları
+            </p>
+            <ul style={{ margin: '0', paddingLeft: '20px', color: 'var(--text-accent)' }}>
+              <li>2 web sitesi (ürün + kurumsal)</li>
+              <li>Aktif Instagram varlığı</li>
+              <li>Türkiye merkezli, hızlı tepki verebilir</li>
+            </ul>
+          </div>
+
+          <div style={{
+            padding: '12px',
+            background: 'var(--bg-warning)',
+            borderRadius: 'var(--radius)',
+            color: 'var(--text-warning)'
+          }}>
+            <p style={{ margin: '0 0 4px 0', fontWeight: '500' }}>
+              ⚠️ LAV'ın Gelişim Alanları
+            </p>
+            <ul style={{ margin: '0', paddingLeft: '20px', color: 'var(--text-warning)' }}>
+              <li>Paşabahçe kadar 2. Instagram hesabı yok (daha fazla reach için)</li>
+              <li>Pinterest stratejisi yok (Paşabahçe'nin güçlü noktası)</li>
+              <li>Rakipler arasında en az İnstagram varlığı?</li>
+            </ul>
+          </div>
+
+          <div style={{
+            padding: '12px',
+            background: 'var(--bg-success)',
+            borderRadius: 'var(--radius)',
+            color: 'var(--text-success)'
+          }}>
+            <p style={{ margin: '0 0 4px 0', fontWeight: '500' }}>
+              🎯 Hızlı Aksiyon Planı
+            </p>
+            <ul style={{ margin: '0', paddingLeft: '20px', color: 'var(--text-success)' }}>
+              <li>Pinterest profili oluştur (interior design, lifestyle niş'inde güçlü)</li>
+              <li>İkincil Instagram hesabı ekle (@lavmagaza? @lavdesign?)</li>
+              <li>LinkedIn kurumsal hesabını aktif et</li>
+              <li>4 haftalık content calendar'ı uygula</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Links */}
+      <div style={{
+        background: 'var(--surface-0)',
+        border: '0.5px solid var(--border)',
+        borderRadius: '12px',
+        padding: '1rem',
+        marginTop: '2rem'
+      }}>
+        <h4 style={{ fontSize: '12px', fontWeight: '500', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+          🔗 Hızlı Linkler
+        </h4>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <a 
+            href="https://www.lav.com.tr/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              padding: '8px 12px',
+              background: 'var(--fill-accent)',
+              color: 'white',
+              borderRadius: 'var(--radius)',
+              textDecoration: 'none',
+              fontSize: '12px',
+              fontWeight: '500',
+              textAlign: 'center',
+              cursor: 'pointer'
+            }}
+          >
+            🌐 LAV.com.tr
+          </a>
+
+          <a 
+            href="https://www.instagram.com/lavturkiye/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              padding: '8px 12px',
+              background: 'var(--fill-accent)',
+              color: 'white',
+              borderRadius: 'var(--radius)',
+              textDecoration: 'none',
+              fontSize: '12px',
+              fontWeight: '500',
+              textAlign: 'center',
+              cursor: 'pointer'
+            }}
+          >
+            📸 Instagram
+          </a>
+
+          <a 
+            href="https://company.lav.com.tr/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              padding: '8px 12px',
+              background: 'var(--fill-accent)',
+              color: 'white',
+              borderRadius: 'var(--radius)',
+              textDecoration: 'none',
+              fontSize: '12px',
+              fontWeight: '500',
+              textAlign: 'center',
+              cursor: 'pointer'
+            }}
+          >
+            🏢 Kurumsal
+          </a>
+
+          <a 
+            href="https://www.instagram.com/lavturkiye/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              padding: '8px 12px',
+              background: 'var(--fill-accent)',
+              color: 'white',
+              borderRadius: 'var(--radius)',
+              textDecoration: 'none',
+              fontSize: '12px',
+              fontWeight: '500',
+              textAlign: 'center',
+              cursor: 'pointer'
+            }}
+          >
+            💬 @lavturkiye
+          </a>
+        </div>
+      </div>
     </div>
   );
 
@@ -3411,6 +4008,22 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
         >
           💰 Medya Performans
         </button>
+        <button
+          onClick={() => setActiveTab('lavprofile')}
+          style={{
+            padding: '12px 16px',
+            background: activeTab === 'lavprofile' ? 'var(--surface-2)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'lavprofile' ? '2px solid var(--fill-accent)' : 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: activeTab === 'lavprofile' ? '500' : '400',
+            color: activeTab === 'lavprofile' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          🏢 LAV Profili
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -3419,6 +4032,7 @@ Pratik, implementable ve rakip benchmarklı öneriler yap.`
       {activeTab === 'recommendations' && <RecommendationsTab />}
       {activeTab === 'content' && <ContentManagementTab />}
       {activeTab === 'media' && <MediaPerformanceTab />}
+      {activeTab === 'lavprofile' && <LAVProfileTab />}
     </div>
   );
 }
