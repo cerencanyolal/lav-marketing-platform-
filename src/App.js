@@ -209,7 +209,7 @@ Pratik veriler ve spesifik rakamlar sun. Türkiye pazarına göre tavsiyeler ver
         country: 'Türkiye',
         marketSize: 'Türkiye Pazar (~500M EUR)',
         growthRate: '%4-6 (2024-2025)',
-        trends: 'Sofra kültürü değişiyor, ev dekorasyonu trendleri modern estetik'e kaymış durumda. Premium ve sürdürülebilir ürünlere olan talep artıyor.',
+        trends: `Sofra kültürü değişiyor, ev dekorasyonu trendleri modern estetik'e kaymış durumda. Premium ve sürdürülebilir ürünlere olan talep artıyor.`,
         opportunities: `Türkiye'deki cam ve bardak pazarında birkaç önemli trend:
 
 1. Sofra Alışkanlıkları: Aile içi yemek kültürü güçlü kaliyor ama ev dekorasyonu tarafında yükseliş var. Premium sofra setlerine olan talep artıyor.
